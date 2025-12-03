@@ -1,4 +1,6 @@
 using Domain.Enums;
+using Domain.Events;
+using Domain.Exceptions;
 
 namespace Domain.Entities;
 
@@ -19,6 +21,9 @@ public record Reservation
     public DateTime? ConfirmedAt { get; set; }
     public DateTime? CancelledAt { get; set; }
     
+    private readonly List<DomainEvent> _domainEvents = [];
+    public IReadOnlyList<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    
     public int Version { get; set; }
 
     public bool IsExpired() => Status == ReservationStatus.Pending && DateTime.UtcNow > ExpiresAt;
@@ -27,28 +32,66 @@ public record Reservation
     {
         if (Status != ReservationStatus.Pending)
         {
-            throw new InvalidOperationException("Only pending reservations can be confirmed.");
+            throw new InvalidReservationStatusException(Id, Status, ReservationStatus.Pending);
         }
         
         if (IsExpired())
         {
-            throw new InvalidOperationException("Reservation has expired and cannot be confirmed.");
+            throw new ReservationExpiredException(Id, ExpiresAt);
         }
         
         Status = ReservationStatus.Confirmed;
         ConfirmedAt = DateTime.UtcNow;
+        
+        _domainEvents.Add(new ReservationConfirmedEvent
+        {
+            Reservation = this
+        });
     }
 
     public void Cancel()
     {
-        if (Status == ReservationStatus.Confirmed)
+        switch (Status)
         {
-            throw new InvalidOperationException("Confirmed reservations cannot be cancelled.");
+            case ReservationStatus.Confirmed:
+                throw new CannotCancelConfirmedReservationException(Id);
+            case ReservationStatus.Cancelled:
+                throw new InvalidReservationStatusException(Id, Status, ReservationStatus.Pending);
+            case ReservationStatus.Pending:
+            case ReservationStatus.Expired:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
-        
+
         Status = ReservationStatus.Cancelled;
         CancelledAt = DateTime.UtcNow;
         
-        Ticket.ReleaseReservation(Quantity);
+        Ticket.ReleaseReservation(Quantity, "Cancelled");
+        
+        _domainEvents.Add(new ReservationCancelledEvent
+        {
+            Reservation = this
+        });
+    }
+
+    public void MarkAsExpired()
+    {
+        if (Status != ReservationStatus.Pending)
+        {
+            throw new InvalidReservationStatusException(Id, Status, ReservationStatus.Pending);
+        }
+        
+        Status = ReservationStatus.Expired;
+        Ticket.ReleaseReservation(Quantity, "Expired");
+        _domainEvents.Add(new ReservationExpiredEvent
+        {
+            Reservation = this
+        });
+    }
+    
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 }
