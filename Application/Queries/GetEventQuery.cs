@@ -1,0 +1,9 @@
+using Application.DTOs;
+using MediatR;
+
+namespace Application.Queries;
+
+public record GetEventQuery: IRequest<EventDetailsDto>
+{
+    public required string EventId { get; init; }
+}
