@@ -1,4 +1,3 @@
-using Domain.Enums;
 using Domain.Events;
 using Domain.Exceptions;
 
@@ -9,7 +8,6 @@ public class Ticket
     public required string Id { get; init; }
     public required Event Event { get; init; }
     
-    public required TicketType TicketType { get; set; }
     public string? Description { get; set; }
     public required decimal Price { get; set; }
     
