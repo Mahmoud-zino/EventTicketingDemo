@@ -1,9 +1,9 @@
 using Application.DTOs;
-using MediatR;
+using Mediator;
 
 namespace Application.Queries;
 
-public record GetUserReservationQuery: IRequest<IList<ReservationDto>>, IRequest<List<ReservationDto>>
+public record GetUserReservationQuery: IRequest<List<ReservationDto>>
 {
     public required string UserId { get; init; }
 }

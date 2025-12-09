@@ -3,16 +3,16 @@ using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
-using MediatR;
+using Mediator;
 
 namespace Application.CommandHandlers;
 
-public class ReserveTicketsCommandHandler(IEventRepository eventRepository, IReservationRepository reservationRepository)
+public sealed class ReserveTicketsCommandHandler(IEventRepository eventRepository, IReservationRepository reservationRepository)
     : IRequestHandler<ReserveTicketCommand, string>
 {
     private const int ReservationExpiryMinutes = 15;
     
-    public async Task<string> Handle(ReserveTicketCommand request, CancellationToken cancellationToken)
+    public async ValueTask<string> Handle(ReserveTicketCommand request, CancellationToken cancellationToken)
     {
         var @event = await eventRepository.GetByIdAsync(request.EventId, cancellationToken);
         if (@event is null)

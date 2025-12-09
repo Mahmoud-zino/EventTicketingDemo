@@ -3,13 +3,13 @@ using Application.Interfaces;
 using Application.Queries;
 using Domain.Enums;
 using Domain.Exceptions;
-using MediatR;
+using Mediator;
 
 namespace Application.QueryHandlers;
 
-public class GetEventQueryHandler(IEventRepository eventRepository): IRequestHandler<GetEventQuery, EventDetailsDto>
+public sealed class GetEventQueryHandler(IEventRepository eventRepository): IRequestHandler<GetEventQuery, EventDetailsDto>
 {
-    public async Task<EventDetailsDto> Handle(GetEventQuery request, CancellationToken cancellationToken)
+    public async ValueTask<EventDetailsDto> Handle(GetEventQuery request, CancellationToken cancellationToken)
     {
         var @event = await eventRepository.GetByIdAsync(request.EventId, cancellationToken);
         if (@event is null)

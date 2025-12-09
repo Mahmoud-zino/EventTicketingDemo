@@ -1,5 +1,5 @@
 using Application.DTOs;
-using MediatR;
+using Mediator;
 
 namespace Application.Queries;
 

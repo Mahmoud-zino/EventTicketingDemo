@@ -2,13 +2,13 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Queries;
 using Domain.Enums;
-using MediatR;
+using Mediator;
 
 namespace Application.QueryHandlers;
 
-public class GetUserReservationQueryHandler(IReservationRepository reservationRepository): IRequestHandler<GetUserReservationQuery, List<ReservationDto>>
+public sealed class GetUserReservationQueryHandler(IReservationRepository reservationRepository): IRequestHandler<GetUserReservationQuery, List<ReservationDto>>
 {
-    public async Task<List<ReservationDto>> Handle(GetUserReservationQuery request, CancellationToken cancellationToken)
+    public async ValueTask<List<ReservationDto>> Handle(GetUserReservationQuery request, CancellationToken cancellationToken)
     {
         var reservations = await reservationRepository.GetByUserIdAsync(request.UserId, cancellationToken);
         

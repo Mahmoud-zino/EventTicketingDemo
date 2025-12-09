@@ -1,9 +1,6 @@
-using Application.DTOs;
-using Mediator;
+namespace Application.DTOs;
 
-namespace Application.Commands;
-
-public record CreateEventCommand: IRequest<string>
+public record CreateEventDto
 {
     public required string Name { get; init; }
     public required string Description { get; init; }

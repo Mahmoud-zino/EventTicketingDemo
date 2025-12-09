@@ -1,8 +1,6 @@
-using Mediator;
+namespace Application.DTOs;
 
-namespace Application.Commands;
-
-public record ReserveTicketCommand: IRequest<string>
+public record CreateReservationDto
 {
     public required string EventId { get; init; }
     public required string TicketId { get; init; }

@@ -2,13 +2,13 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Queries;
 using Domain.Enums;
-using MediatR;
+using Mediator;
 
 namespace Application.QueryHandlers;
 
-public class GetAvailableEventsQueryHandler(IEventRepository eventRepository): IRequestHandler<GetAvailableEventsQuery, List<EventSummaryDto>>
+public sealed class GetAvailableEventsQueryHandler(IEventRepository eventRepository): IRequestHandler<GetAvailableEventsQuery, List<EventSummaryDto>>
 {
-    public async Task<List<EventSummaryDto>> Handle(GetAvailableEventsQuery request, CancellationToken cancellationToken)
+    public async ValueTask<List<EventSummaryDto>> Handle(GetAvailableEventsQuery request, CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(cancellationToken);
         

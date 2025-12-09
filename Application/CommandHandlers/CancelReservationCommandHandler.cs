@@ -1,13 +1,13 @@
 using Application.Commands;
 using Application.Interfaces;
 using Domain.Exceptions;
-using MediatR;
+using Mediator;
 
 namespace Application.CommandHandlers;
 
-public class CancelReservationCommandHandler(IReservationRepository reservationRepository): IRequestHandler<CancelReservationCommand>
+public sealed class CancelReservationCommandHandler(IReservationRepository reservationRepository): IRequestHandler<CancelReservationCommand>
 {
-    public async Task Handle(CancelReservationCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(CancelReservationCommand request, CancellationToken cancellationToken)
     {
         var reservation = await reservationRepository.GetByIdAsync(request.ReservationId, cancellationToken);
         if (reservation is null)
@@ -17,5 +17,6 @@ public class CancelReservationCommandHandler(IReservationRepository reservationR
         
         reservation.Cancel();
         await reservationRepository.UpdateAsync(reservation, cancellationToken);
+        return Unit.Value;
     }
 }
