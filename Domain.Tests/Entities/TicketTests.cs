@@ -58,7 +58,7 @@ public class TicketTests
 
         // Assert
         act.Should().Throw<InsufficientTicketsException>()
-            .Which.Message.Should().Be($"Cannot reserve 5 ticket(s). Only 3 available.");
+            .Which.Message.Should().Be("Cannot reserve 5 ticket(s). Only 3 available.");
     }
 
     [Test]

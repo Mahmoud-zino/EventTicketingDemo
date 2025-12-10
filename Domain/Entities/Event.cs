@@ -80,4 +80,12 @@ public record Event
             throw new EventSalesEndedException(Id, SalesEndDate);
         }
     }
+    
+    public virtual bool Equals(Event? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id;
+    }
+    public override int GetHashCode() => Id.GetHashCode();
 }

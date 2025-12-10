@@ -134,7 +134,7 @@ public class ReserveTicketsCommandHandlerTests
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Version = 0,
-            Tickets = new List<Ticket>()
+            Tickets = []
         };
 
         _eventRepository.GetByIdAsync("event-1", Arg.Any<CancellationToken>())

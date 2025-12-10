@@ -7,6 +7,11 @@ namespace API.Middleware;
 
 public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger) : IMiddleware
 {
+    private static readonly JsonSerializerOptions SerializationOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+    
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
@@ -53,10 +58,7 @@ public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> lo
             instance = context.Request.Path.ToString()
         };
 
-        var json = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(problemDetails, SerializationOptions);
         
         return  context.Response.WriteAsync(json);
     }

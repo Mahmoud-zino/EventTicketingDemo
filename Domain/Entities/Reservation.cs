@@ -94,4 +94,13 @@ public record Reservation
     {
         _domainEvents.Clear();
     }
+    
+    public virtual bool Equals(Reservation? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id;
+    }
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

@@ -3,7 +3,7 @@ using Domain.Exceptions;
 
 namespace Domain.Entities;
 
-public class Ticket
+public sealed class Ticket
 {
     public required string Id { get; init; }
     public required Event Event { get; init; }
@@ -79,4 +79,12 @@ public class Ticket
     {
         _domainEvents.Clear();
     }
+    public bool Equals(Ticket? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Id == other.Id;
+    }
+
+    public override int GetHashCode() => Id.GetHashCode();
 }
