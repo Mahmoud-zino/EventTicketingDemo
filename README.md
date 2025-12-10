@@ -4,24 +4,24 @@ A production-ready REST API demonstrating Clean Architecture and CQRS patterns t
 
 ## Project Overview
 
-This API handles concurrent ticket reservations with optimistic concurrency control, implements time-limited booking windows, and maintains clear separation between write and read operations. The system prevents double-booking through version-based locking and provides comprehensive error handling with domain-specific exceptions.
+This API handles concurrent ticket reservations with optimistic concurrency control, implements time-limited booking windows, and maintains clear separation between write and read operations. 
+The system prevents double-booking through version-based locking and provides comprehensive error handling with domain-specific exceptions.
 
 **Built to demonstrate:**
 - Clean Architecture with clear separation of concerns
 - CQRS pattern with command/query separation
 - Domain-Driven Design with rich domain models
 - Optimistic concurrency handling
-- Object-reference-based domain modeling
 - Proper exception handling and API error responses
 - Repository pattern with persistence abstraction
 - RESTful API design with Swagger documentation
+- Professional testing practices with NUnit, NSubstitute, and AwesomeAssertions
 
 ---
 
 ## Architecture
 
 ### Clean Architecture Layers
-
 ```
 ┌─────────────────────────────────────────┐
 │            API Layer                    │
@@ -43,21 +43,6 @@ This API handles concurrent ticket reservations with optimistic concurrency cont
 │  (Repositories, MongoDB, Persistence)   │
 └─────────────────────────────────────────┘
 ```
-
-### CQRS Implementation
-
-**Commands (Write Operations):**
-- CreateEvent
-- ReserveTickets
-- ConfirmReservation
-- CancelReservation
-
-**Queries (Read Operations):**
-- GetEventById
-- GetAvailableEvents
-- GetUserReservations
-- GetReservationById
-
 ---
 
 ## 🛠️ Technology Stack
@@ -72,15 +57,21 @@ This API handles concurrent ticket reservations with optimistic concurrency cont
 - MongoDB.Driver 2.28.0
 
 **Patterns & Libraries:**
-- Mediator -> (MediatR free alternative)
+- Mediator
 - Clean Architecture
 - Repository Pattern
 - Domain Events
+
+**Testing:**
+- NUnit
+- NSubstitute
+- AwesomeAssertions
 
 **Documentation:**
 - Swashbuckle (Swagger/OpenAPI)
 
 ---
+
 
 ## Getting Started
 
@@ -133,7 +124,12 @@ dotnet restore
 dotnet build
 ```
 
-5. **Run the API**
+5. **Run the tests**
+```bash
+dotnet test
+```
+
+6. **Run the API**
 ```bash
 cd API
 dotnet run
@@ -165,63 +161,12 @@ The API will be available at:
 | POST | `/api/reservations` | Reserve tickets (15-min hold) |
 | PUT | `/api/reservations/{id}/confirm` | Confirm reservation |
 | DELETE | `/api/reservations/{id}` | Cancel reservation |
-
-### Example Requests
-
-**Create Event:**
-```json
-POST /api/events
-{
-  "name": "Rock Concert 2026",
-  "description": "Amazing rock concert featuring top bands",
-  "venue": "Vienna Arena",
-  "eventDate": "2026-06-15T20:00:00Z",
-  "salesStartDate": "2025-12-15T00:00:00Z",
-  "salesEndDate": "2026-06-14T23:59:59Z",
-  "organizerId": "organizer-123",
-  "tickets": [
-    {
-      "name": "VIP",
-      "description": "VIP seating with backstage access",
-      "price": 150.00,
-      "totalQuantity": 50,
-      "seatSection": "A"
-    },
-    {
-      "name": "Regular",
-      "description": "Standard seating",
-      "price": 50.00,
-      "totalQuantity": 200
-    }
-  ]
-}
-```
-
-**Reserve Tickets:**
-```json
-POST /api/reservations
-{
-  "eventId": "event-id-here",
-  "ticketId": "ticket-id-here",
-  "userId": "user@example.com",
-  "quantity": 2
-}
-```
-
-**Confirm Reservation:**
-```json
-PUT /api/reservations/{reservationId}/confirm
-{
-  "paymentIntentId": "pi_1234567890"
-}
-```
-
 ---
 
 ## 🎯 Key Features Demonstrated
 
 ### 1. **Clean Architecture**
-- **Domain Layer**: business logic, no external dependencies
+- **Domain Layer**: Pure business logic, no external dependencies
 - **Application Layer**: Use cases and orchestration
 - **Infrastructure Layer**: Database access and external concerns
 - **API Layer**: HTTP endpoints and presentation
@@ -237,7 +182,7 @@ PUT /api/reservations/{reservationId}/confirm
 - Domain events for decoupled side effects
 - Value objects and entity aggregates
 
-### 4. **Optimistic Concurrency Control**
+### 6. **Optimistic Concurrency Control**
 ```csharp
 // Version-based locking prevents lost updates
 var result = await collection.ReplaceOneAsync(
@@ -248,7 +193,7 @@ if (result.MatchedCount == 0)
     throw new ConcurrencyException();
 ```
 
-### 5. **Domain Events**
+### 7. **Domain Events**
 ```csharp
 // Events raised by domain entities
 reservation.Confirm(confirmationCode);
@@ -256,81 +201,16 @@ reservation.Confirm(confirmationCode);
 // → Can trigger email notifications, analytics, etc.
 ```
 
-### 6. **Comprehensive Error Handling**
+### 8. **Comprehensive Error Handling**
 - Domain-specific exceptions with context
 - Global exception middleware
 - RFC 7807 Problem Details responses
 - Proper HTTP status codes
 
-### 7. **Time-Limited Reservations**
+### 9. **Time-Limited Reservations**
 - 15-minute confirmation window
 - Automatic inventory release on expiration
 - State machine for reservation status
-
----
-
-## 🗄️ Database Design
-
-### Collections
-
-**events:**
-```javascript
-{
-  "_id": "event-123",
-  "name": "Rock Concert 2026",
-  "description": "...",
-  "venue": "Vienna Arena",
-  "eventDate": ISODate("2026-06-15T20:00:00Z"),
-  "salesStartDate": ISODate("2025-12-15T00:00:00Z"),
-  "salesEndDate": ISODate("2026-06-14T23:59:59Z"),
-  "organizerId": "organizer-123",
-  "status": "Published",
-  "tickets": [
-    {
-      "_id": "ticket-456",
-      "eventId": "event-123",
-      "name": "VIP",
-      "price": 150.00,
-      "totalQuantity": 50,
-      "availableQuantity": 45,
-      "reservedQuantity": 5,
-      "version": 3
-    }
-  ],
-  "version": 5,
-  "createdAt": ISODate("2025-12-10T10:00:00Z"),
-  "updatedAt": ISODate("2025-12-10T15:30:00Z")
-}
-```
-
-**reservations:**
-```javascript
-{
-  "_id": "reservation-789",
-  "eventId": "event-123",
-  "ticketId": "ticket-456",
-  "userId": "user@example.com",
-  "quantity": 2,
-  "unitPrice": 150.00,
-  "status": "Pending",
-  "createdAt": ISODate("2025-12-10T15:30:00Z"),
-  "expiresAt": ISODate("2025-12-10T15:45:00Z"),
-  "confirmedAt": null,
-  "confirmationCode": null,
-  "version": 0
-}
-```
-
-### Indexes
-
-**Events:**
-- `{ status: 1, eventDate: 1 }` - Query published events by date
-- `{ organizerId: 1 }` - Find events by organizer
-
-**Reservations:**
-- `{ userId: 1 }` - User's reservations
-- `{ eventId: 1 }` - Event reservations
-- `{ status: 1, expiresAt: 1 }` - Cleanup expired reservations
 
 ---
 
@@ -417,7 +297,6 @@ The system uses **optimistic concurrency control** to handle race conditions:
 2. User A reserves → `Version = 6`
 3. User B tries to reserve → Fails with `ConcurrencyException`
 4. User B's update is rejected because version doesn't match
-
 ```csharp
 var result = await collection.ReplaceOneAsync(
     e => e.Id == event.Id && e.Version == currentVersion,
@@ -429,27 +308,38 @@ if (result.MatchedCount == 0)
 
 ---
 
-## Notes
+## 🧪 Testing
 
-### Educational Purpose
-This is a portfolio/demonstration project showcasing enterprise software design patterns and clean code principles. While production-ready in architecture, additional features (authentication, authorization, payment processing, etc.) would be needed for a real-world deployment.
+This project includes comprehensive unit tests demonstrating professional testing practices used in production environments. 
+While not aiming for 100% coverage, the tests focus on critical business logic and proper testing principles.
 
----
+### Testing Stack
+- **NUnit** - Testing framework
+- **NSubstitute** - Mocking library for dependencies
+- **AwesomeAssertions** - Readable and expressive assertions
 
-## 👨‍💻 Author
+### Testing Principles Demonstrated
 
-**Mahmoud** - Backend Developer specializing in C#/.NET and Clean Architecture
+1. **Arrange-Act-Assert Pattern** - Clear test structure for readability
+2. **Test Isolation** - Each test is independent and can run in any order
+3. **Mocking External Dependencies** - Using NSubstitute for repository mocking
+4. **Descriptive Test Names** - Tests clearly describe what they verify
+5. **Edge Case Coverage** - Testing both happy paths and error scenarios
+6. **Domain Logic Testing** - Verifying business rules are enforced
+7. **Exception Testing** - Ensuring proper error handling
+8. **Domain Events Verification** - Checking event-driven architecture works correctly
 
-- 6+ years of .NET experience
-- Focus on scalable microservices and domain-driven design
-- Located in Austria
+### Running Tests
+```bash
+# Run all tests
+dotnet test
 
----
+# Run with detailed output
+dotnet test --logger "console;verbosity=detailed"
 
-## 🙏 Acknowledgments
+# Run specific test class
+dotnet test --filter "FullyQualifiedName~TicketTests"
 
-- Clean Architecture principles by Robert C. Martin
-- CQRS pattern by Greg Young
-- MongoDB documentation and best practices
-- ASP.NET Core team for excellent framework
-- Mediator library by Martin Costello
+# Run tests with coverage (if coverlet is installed)
+dotnet test /p:CollectCoverage=true
+```
