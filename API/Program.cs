@@ -57,6 +57,8 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
     await MongoDbIndexConfiguration.ConfigureIndexesAsync(context);
+    var dbInitializer = new DatabaseInitializer(context);
+    await dbInitializer.InitializeAsync();
 }
 
 if (app.Environment.IsDevelopment())

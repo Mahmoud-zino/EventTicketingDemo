@@ -1,5 +1,6 @@
 using Domain.Enums;
 using Infrastructure.Documents;
+using MongoDB.Driver;
 
 namespace Infrastructure;
 
@@ -13,14 +14,14 @@ public class DatabaseInitializer(MongoDbContext context)
 
     private async Task SeedDataAsync()
     {
-        var eventCount = await context.Events.CountDocumentsAsync(null);
+        var eventCount = await context.Events.CountDocumentsAsync(FilterDefinition<EventDocument>.Empty);
         if (eventCount > 0)
             return; 
 
         // Seed sample events
         var events = new List<EventDocument>
         {
-            new EventDocument
+            new()
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = "Rock Concert 2026",
